@@ -1,4 +1,4 @@
-# ElasticSearch ZKDiscovery2.0
+# ElasticSearch ZKDiscovery2.1
 
 —— Zookeeper plugin for elasticsearch
 ------------
@@ -8,16 +8,20 @@
 
 ElasticSearch可通过该插件自动向zookeeper汇报ElasticSearch Cluster中每一个节点状态插件
 
-* zkdiscovery2.0
+* zkdiscovery-2.1(master)
+	- 改进了/es/nodes目录下节点数据的格式，增加了本地节点设置项:settings。
+* zkdiscovery-2.0
 	- 改进了数据的一致性。修改了状态数据采集源，改用ES的/_cluster/state描述ES的状态数据，实现了Zookeeper和Zen的一致性。
 	- 改进了数据采集者，减少了网络流量。修改了数据采集者为Master，以前是全部节点汇报自己节点状态数据，改进后由Master节点汇报全部节点状态数据。
 	- 新增了对集群脑裂现象的支持（一种妥协的方式），在集群发生脑裂现象以后，每个小集群最后选举出Master会复写ZK上ES状态数据。
-* zkdiscovery1.0
+	- 新增了master_node节点：/es/master_node，指出了当前集群谁是master，并改进了/es/nodes节点下临时节点的Name显示为IP地址，可直观看出节点IP。
+* zkdiscovery-1.0
 	- ElasticSearch自动发现插件可自动向zookeeper汇报ES节点状态数据，包括主机名称、IP地址、端口号等。
 	- 实现了在zk session过期后可节点再注册的功能
 
 |  Version  | ES Version  |
 | :-------: | :---------: |
+| 2.1       | 1.2.1       |
 | 2.0       | 1.2.1       |
 | 1.0       | 1.2.1       |
 
@@ -51,7 +55,7 @@ bin/plugin --remove zkdiscovery
 	  		|- ......
 </pre>
 
-* 一个节点data示例：
+* 一个节点上报的节点数据示例：
 ```JSON
 {
     "http_address": "inet[/192.168.84.155:9200]",
@@ -60,6 +64,32 @@ bin/plugin --remove zkdiscovery
     "name": "slave162",
     "id": "zJfHyEQ0TQ25arViU7wE5g",
     "host": "slave162",
-    "version": "1.2.1"
+    "version": "1.2.1",
+    "settings": {
+        "node": {
+            "name": "slave162"
+        },
+        "name": "slave162",
+        "path": {
+            "data": "...",
+            "logs": "...",
+            "home": "..."
+        },
+        "cluster": {
+            "routing": {
+                "allocation": {
+                    "node_concurrent_recoveries": "8"
+                }
+            },
+            "name": "elasticsearch_single_test"
+        },
+        "discovery": {
+            "zen": {
+                "minimum_master_nodes": "1"
+            }
+        },
+        "foreground": "yes",
+        ...
+    }
 }
 ```

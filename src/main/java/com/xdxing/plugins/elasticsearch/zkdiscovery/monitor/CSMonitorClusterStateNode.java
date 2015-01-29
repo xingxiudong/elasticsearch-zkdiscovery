@@ -1,5 +1,7 @@
 package com.xdxing.plugins.elasticsearch.zkdiscovery.monitor;
 
+import java.util.Map;
+
 public class CSMonitorClusterStateNode {
 
 	private String id;
@@ -15,6 +17,8 @@ public class CSMonitorClusterStateNode {
 	private String ip;
 	
 	private String version;
+	
+	private Map<String, Object> settings;
 	
 
 	public CSMonitorClusterStateNode() {
@@ -81,4 +85,13 @@ public class CSMonitorClusterStateNode {
 	public void setVersion(String version) {
 		this.version = version;
 	}
+
+	public Map<String, Object> getSettings() {
+		return settings;
+	}
+
+	public void setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+	}
+	
 }

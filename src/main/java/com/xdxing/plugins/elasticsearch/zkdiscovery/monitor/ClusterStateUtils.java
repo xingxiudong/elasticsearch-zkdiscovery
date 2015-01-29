@@ -23,8 +23,8 @@ public class ClusterStateUtils {
 		return null == nodes || nodes.size() == 0 ? null : nodes.get(0);
 	}
 	
-	public static List<CSMonitorClusterStateNode> getAllNodes(final String rest) {
-		return getNodes(rest, "/_nodes/http");
+	public static List<CSMonitorClusterStateNode> getAllNodes(final String rest, final String... filters) {
+		return getNodes(rest, "/_nodes/" + StringUtils.join(filters, ","));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -35,16 +35,20 @@ public class ClusterStateUtils {
 		Map<String, Object> __map = JsonUtil.deserialize(source, new TypeReference<Map<String, Object>>(){});
 		if (null != __map) {
 			Map<String, Object> _nodes = (Map<String, Object>) __map.get("nodes");
-			for (String key : _nodes.keySet()) {
-				Map<String, String> node = (Map<String, String>) _nodes.get(key);
+			for (String node_id : _nodes.keySet()) {
+				Map<String, Object> node = (Map<String, Object>) _nodes.get(node_id);
 				
-				CSMonitorClusterStateNode _node = new CSMonitorClusterStateNode(key);
-				_node.setName(node.get("name"));
-				_node.setHost(node.get("host"));
-				_node.setIp(node.get("ip"));
-				_node.setHttp_address(node.get("http_address"));
-				_node.setTransport_address(node.get("transport_address"));
-				_node.setVersion(node.get("version"));
+				CSMonitorClusterStateNode _node = new CSMonitorClusterStateNode(node_id);
+				_node.setName((String) node.get("name"));
+				_node.setHost((String) node.get("host"));
+				_node.setIp((String) node.get("ip"));
+				_node.setHttp_address((String) node.get("http_address"));
+				_node.setTransport_address((String) node.get("transport_address"));
+				_node.setVersion((String) node.get("version"));
+				
+				if (node.containsKey("settings")) {
+					_node.setSettings((Map<String, Object>) node.get("settings"));
+				}
 				
 				nodes.add(_node);
 			}
@@ -60,7 +64,7 @@ public class ClusterStateUtils {
 		if (null != cluster_state) {
 			clusterState.setCluster_name(cluster_state.get("cluster_name"));
 			clusterState.setMaster_node(cluster_state.get("master_node"));
-			clusterState.setNodes(getAllNodes(rest));
+			clusterState.setNodes(getAllNodes(rest, "http", "settings"));
 		}
 		return clusterState;
 	}
